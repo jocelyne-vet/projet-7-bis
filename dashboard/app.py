@@ -4,14 +4,18 @@ import numpy as np
 import plotly.graph_objects as go
 import matplotlib.pyplot as plt
 import streamlit as st
+import math
+
 
 ######################################
 # recupération des données 
 ######################################
 @st.cache
 def load_model():
-    pickled_model, pickled_Xtrain, pickled_Ytrain, pickled_Xtest, pickled_Ytest = pickle.load(open("tuple_model_lr.pkl", 'rb'))
-    return pickled_model, pickled_Xtrain, pickled_Ytrain, pickled_Xtest, pickled_Ytest
+    pickled_model, X_test= pickle.load(open("tuple_model_lr.pkl", 'rb'))
+    return pickled_model, X_test
+    
+
 
 @st.cache
 def load_data(filename):
@@ -36,13 +40,14 @@ def get_data(data, idClient):
      
 
 @st.cache    
-def getInformationsClient(data, idClient,col):  
-    return data.at[int(idClient[0]), col]
-    
-@st.cache
-def getNomCol(nom):
-    dict_name = {"Age":"DAYS_BIRTH", "Etat civil": "NAME_FAMILY_STATUS", "Situation du logement": "NAME_HOUSING_TYPE", "Catégorie socio-professionnel": "NAME_INCOME_TYPE",
-                 "Nb enfants": "CNT_FAM_MEMBERS", "Revenu": "AMT_INCOME_TOTAL", "Profession": "OCCUPATION_TYPE", "ANCIENNETE": "DAYS_EMPLOYED"}
+def getInformationsClient(data, idClient,col):
+    if isinstance(data.at[int(idClient[0]), col], float):
+        if math.isnan(data.at[int(idClient[0]), col]):
+            return "inconnu(e)"
+        else:
+            return data.at[int(idClient[0]), col]
+    else:
+        return data.at[int(idClient[0]), col]
 
 
 
@@ -50,7 +55,7 @@ def getNomCol(nom):
 @st.cache
 def load_prediction(data, id, clf):
         X=data
-        # X = X.drop(["TARGET"], axis = 1)
+        #X = X.drop(["TARGET"], axis = 1)
         score = clf.predict_proba(X[X.index == int(id)])[:,1]
         return score
 
@@ -68,12 +73,12 @@ def getHistogramme(data, idClient, col,  mod, title):
         col_a = col+"bis"
         data_bis[col_a] = np.abs(round((data_bis[col]/365), 2))
         val = data_bis.at[int(idClient[0]), col_a]
-        print("test")
 
         data_bis[[col_a]].plot(kind = "hist", ax = ax)
         
     plt.axvline(x=val, color = "red")
     plt.title(title)
+    ax.get_legend().remove()
  
     return fig
      
@@ -83,13 +88,6 @@ def getHistogramme(data, idClient, col,  mod, title):
 ############################################
 # Informations relatives au score
 ############################################
-# get_predict_solvabilité_client (oui,non)
-
-# get probabilité_solvabilité_client
-
-# plot diagramme importance variables
-
-# plot observation pour le client 
 
 
 ##############################################
