@@ -1,10 +1,10 @@
 import pickle
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 import streamlit as st
 import math
 import sklearn
+import plotly.express as px
 
 ######################################
 # recupération des données 
@@ -58,43 +58,32 @@ def load_prediction(data, id, clf):
         score = clf.predict_proba(X[X.index == int(id)])[:,1]
         return score
 
-#@st.cache(allow_output_mutation=True)
-def getHistogramme(data, idClient, col,  mod, title):
-    fig = plt.figure()
+
      
-    fig, ax = plt.subplots()
+#@st.cache(allow_output_mutation=True)
+def getHistogramme2(data, idClient, col,  mod, title):
     data_bis = data.copy()
     if not mod:
         val = data_bis.at[int(idClient[0]), col]
 
-        data_bis[[col]].plot(kind = "hist", ax = ax)
+ 
+        fig = px.histogram(data_bis, x = col, title = title)
+        
     else:
         col_a = col+"bis"
         data_bis[col_a] = np.abs(round((data_bis[col]/365), 2))
         val = data_bis.at[int(idClient[0]), col_a]
 
-        data_bis[[col_a]].plot(kind = "hist", ax = ax)
-        
-    plt.axvline(x=val, color = "red")
-    plt.title(title)
-    ax.get_legend().remove()
+ 
+        fig = px.histogram(data_bis, x = col_a, title = title)
+    
+    fig.update_xaxes(title=dict(text=col))
+
+    fig.add_vline(x = val, line_width=3, line_dash="dash", line_color="green")
+
  
     return fig
-     
+  
 
-
-
-############################################
-# Informations relatives au score
-############################################
-
-
-##############################################
-# information relatives au client
-#############################################
-
-#  getInformations (etat civil, profession, situation, logement)
-
-# plottHistogramme (age, nb d'enfants, revenu, ancienneté) 
-
+ 
 
