@@ -9,6 +9,7 @@ from PIL import Image
 import sklearn
 import plotly.express as px
 import plotly.graph_objects as go
+import imblearn
 
 #################################################
 
@@ -50,7 +51,7 @@ def show_probabilite(score, seuil):
             'thickness': 0.75,
             'value': seuil}}))
 
-    fig.update_layout(paper_bgcolor = "lavender", font = {'color': "darkblue", 'family': "Arial"})
+    fig.update_layout(paper_bgcolor = "lavender", font = {'color': "darkblue", 'family': "Arial"}, width = 600, height = 400)
 
 
 
@@ -72,7 +73,7 @@ with add_selectbox:
                          app.list_idClient(data)) 
     #st.text("Il y a 3 Clients dans la base")
 
-    visualisation = st.radio("Informations: ", ('Informations relatives au score', 'Informations relatives au client' )) 
+    visualisation = st.radio("Informations: ", ('Informations relatives au score', 'Informations relatives au client', 'Informations relatives aux features' )) 
 
 resultats = st.container()
 
@@ -102,19 +103,11 @@ with resultats :
                 with cont2:
                     show_score(score_res[0],number)
         
-            result_features = st.container()
-            with result_features:
-        
-                st.title("Features importance")
-                
-                images = ['features_imp_shap1.png', 'features_imp_shap2.png']
-                st.image(images, use_column_width=True, caption=["some generic text"] * len(images))
-  
             
             
            
             
-            
+    #else:       
     elif (visualisation == 'Informations relatives au client'):
         if  len(idClient):
             st.title("Informations relatives au client")
@@ -132,7 +125,28 @@ with resultats :
             st.plotly_chart(app.getHistogramme2(data, idClient, "DAYS_EMPLOYED",  True, "Distribution: ancienneté des clients"))
             st.plotly_chart(app.getHistogramme2(data, idClient, "AMT_INCOME_TOTAL",  False, "Distribution: revenu des clients"))
             st.plotly_chart(app.getHistogramme2(data, idClient, "AMT_CREDIT",  False, "Distribution: annuité du crédit"))
+   
     else:
-        st.title("Comparaison")
+        result_features = st.container()
+        with result_features:
+        
+            st.title("Features importance")
+                
+            # images = ['features_imp_shap1.png', 'features_imp_shap2.png']
+            # st.image(images, use_column_width=True, caption=["some generic text"] * len(images))
+             
+            st.write("Voici les 10 coefficients ayant le plus large positif impact sur la probabilité d'être non solvable.")
+            
+            st.image('figure_3.png', width=700)
+                
+            st.write("Voici les 10 coefficients ayant le plus large négatif impact sur la probabilité d'être non solvable.")
+            
+            st.image('figure_4.png', width=700)
+                
+            st.write("Voici l'importance des features.")
+            
+            
+            
+            st.write("Pour résumer, la caractéristique la plus forte dans l’ensemble de données de ce jeu est le ratio new_credit_to_goods_ratio. Une augmentation de ce ratio d’une unité augmente les chances d’être de classe non solvable d’un facteur de 100 lorsque toutes les autres caractéristiques restent les mêmes.")
 
-
+            st.image('features_imp.png', width=700)

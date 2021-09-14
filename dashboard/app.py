@@ -5,6 +5,7 @@ import streamlit as st
 import math
 import sklearn
 import plotly.express as px
+import imblearn
 
 ######################################
 # recupération des données 
@@ -86,4 +87,46 @@ def getHistogramme2(data, idClient, col,  mod, title):
   
 
  
+####################################################################################
+def change_value(data, idClient):
+    col = "AMT_CREDIT"
+    value_credit = data.at[int(idClient), col] 
+    my_range = np.arange(0,2*int(value_credit), value_credit/10)
+    numberCredit = st.select_slider("AMT_CREDIT :", options = my_range, value = value_credit)
+    st.write(numberCredit)
+    col = "AMT_GOODS_PRICE"
+    value_goods_price = data.at[int(idClient), col] 
+    my_range_goods = np.arange(0,2*int(value_goods_price), value_goods_price/10)
+    numberGoods = st.select_slider("AMT_GOODS_PRICE :", options = my_range_goods, value = value_goods_price)
+    col = "AMT_INCOME_TOTAL"
+    value_income = data.at[int(idClient), col] 
+    my_range_income = np.arange(0,2*int(value_income), value_income/10)
+    numberIncome = st.select_slider("AMT_INCOME_TOTAL :", options = my_range_income, value = value_income)
+    col = "AMT_ANNUITY"
+    value_annuity = data.at[int(idClient), col] 
+    my_range_annuity = np.arange(0,2*int(value_annuity), value_annuity/10)
+    numberAnnuity = st.select_slider("AMT_ANNUITY :", options = my_range_annuity, value = value_annuity)
+    return numberCredit, numberGoods, numberIncome, numberAnnuity
 
+@st.cache(allow_output_mutation=True)
+def test_prediction(clf, data, idClient, numberCredit, numberGoods, numberIncome, numberAnnuity):        
+    dfClient = get_data(data, idClient)
+    dfClient = dfClient.copy()
+    dfClient.at[0, "AMT_CREDIT"] = numberCredit
+
+    dfClient.at[0, "AMT_GOODS_PRICE"] = numberGoods
+    dfClient.at[0, "AMT_INCOME_TOTAL"] = numberIncome
+    dfClient.at[0, "AMT_ANNUITY"] = numberAnnuity
+    
+    dfClient['NEW_CREDIT_TO_INCOME_RATIO'] = dfClient['AMT_CREDIT'] / dfClient['AMT_INCOME_TOTAL'] 
+
+    dfClient['NEW_CREDIT_TO_GOODS_RATIO'] = dfClient['AMT_CREDIT'] / dfClient['AMT_GOODS_PRICE'] 
+    dfClient['NEW_ANNUITY_TO_INCOME_RATIO'] = dfClient['AMT_ANNUITY'] / dfClient['AMT_INCOME_TOTAL'] 
+    dfClient['NEW_ANNUITY_TO_CREDIT_RATIO'] = dfClient['AMT_ANNUITY'] / dfClient['AMT_CREDIT'] 
+    dfClient['NEW_INCOME_TO_CREDIT_RATIO'] = dfClient['AMT_INCOME_TOTAL'] / dfClient['AMT_CREDIT'] 
+    dfClient['NEW_INCOME_PER_PERSON'] = dfClient['AMT_INCOME_TOTAL'] / dfClient['CNT_FAM_MEMBERS']
+    
+    
+    
+    score = clf.predict_proba(dfClient[dfClient.index == 0])[:,1]
+    return score
