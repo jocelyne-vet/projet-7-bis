@@ -41,13 +41,13 @@ def get_data(data, idClient):
 
 @st.cache    
 def getInformationsClient(data, idClient,col):
-    if isinstance(data.at[int(idClient[0]), col], float):
-        if math.isnan(data.at[int(idClient[0]), col]):
+    if isinstance(data.at[int(idClient), col], float):
+        if math.isnan(data.at[int(idClient), col]):
             return "inconnu(e)"
         else:
-            return data.at[int(idClient[0]), col]
+            return data.at[int(idClient), col]
     else:
-        return data.at[int(idClient[0]), col]
+        return data.at[int(idClient), col]
 
 
 
@@ -65,7 +65,7 @@ def load_prediction(data, id, clf):
 def getHistogramme2(data, idClient, col,  mod, title):
     data_bis = data.copy()
     if not mod:
-        val = data_bis.at[int(idClient[0]), col]
+        val = data_bis.at[int(idClient), col]
 
  
         fig = px.histogram(data_bis, x = col, title = title)
@@ -73,7 +73,7 @@ def getHistogramme2(data, idClient, col,  mod, title):
     else:
         col_a = col+"bis"
         data_bis[col_a] = np.abs(round((data_bis[col]/365), 2))
-        val = data_bis.at[int(idClient[0]), col_a]
+        val = data_bis.at[int(idClient), col_a]
 
  
         fig = px.histogram(data_bis, x = col_a, title = title)
@@ -88,45 +88,3 @@ def getHistogramme2(data, idClient, col,  mod, title):
 
  
 ####################################################################################
-def change_value(data, idClient):
-    col = "AMT_CREDIT"
-    value_credit = data.at[int(idClient), col] 
-    my_range = np.arange(0,2*int(value_credit), value_credit/10)
-    numberCredit = st.select_slider("AMT_CREDIT :", options = my_range, value = value_credit)
-    st.write(numberCredit)
-    col = "AMT_GOODS_PRICE"
-    value_goods_price = data.at[int(idClient), col] 
-    my_range_goods = np.arange(0,2*int(value_goods_price), value_goods_price/10)
-    numberGoods = st.select_slider("AMT_GOODS_PRICE :", options = my_range_goods, value = value_goods_price)
-    col = "AMT_INCOME_TOTAL"
-    value_income = data.at[int(idClient), col] 
-    my_range_income = np.arange(0,2*int(value_income), value_income/10)
-    numberIncome = st.select_slider("AMT_INCOME_TOTAL :", options = my_range_income, value = value_income)
-    col = "AMT_ANNUITY"
-    value_annuity = data.at[int(idClient), col] 
-    my_range_annuity = np.arange(0,2*int(value_annuity), value_annuity/10)
-    numberAnnuity = st.select_slider("AMT_ANNUITY :", options = my_range_annuity, value = value_annuity)
-    return numberCredit, numberGoods, numberIncome, numberAnnuity
-
-@st.cache(allow_output_mutation=True)
-def test_prediction(clf, data, idClient, numberCredit, numberGoods, numberIncome, numberAnnuity):        
-    dfClient = get_data(data, idClient)
-    dfClient = dfClient.copy()
-    dfClient.at[0, "AMT_CREDIT"] = numberCredit
-
-    dfClient.at[0, "AMT_GOODS_PRICE"] = numberGoods
-    dfClient.at[0, "AMT_INCOME_TOTAL"] = numberIncome
-    dfClient.at[0, "AMT_ANNUITY"] = numberAnnuity
-    
-    dfClient['NEW_CREDIT_TO_INCOME_RATIO'] = dfClient['AMT_CREDIT'] / dfClient['AMT_INCOME_TOTAL'] 
-
-    dfClient['NEW_CREDIT_TO_GOODS_RATIO'] = dfClient['AMT_CREDIT'] / dfClient['AMT_GOODS_PRICE'] 
-    dfClient['NEW_ANNUITY_TO_INCOME_RATIO'] = dfClient['AMT_ANNUITY'] / dfClient['AMT_INCOME_TOTAL'] 
-    dfClient['NEW_ANNUITY_TO_CREDIT_RATIO'] = dfClient['AMT_ANNUITY'] / dfClient['AMT_CREDIT'] 
-    dfClient['NEW_INCOME_TO_CREDIT_RATIO'] = dfClient['AMT_INCOME_TOTAL'] / dfClient['AMT_CREDIT'] 
-    dfClient['NEW_INCOME_PER_PERSON'] = dfClient['AMT_INCOME_TOTAL'] / dfClient['CNT_FAM_MEMBERS']
-    
-    
-    
-    score = clf.predict_proba(dfClient[dfClient.index == 0])[:,1]
-    return score
