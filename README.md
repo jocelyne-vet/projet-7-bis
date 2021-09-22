@@ -27,3 +27,5 @@ Ici nous utilisons un seul modèle de classification : la régression logistique
 
 ## Dashboard / API
 Pour traiter ce sujet nous utilisons STREAMLIT.
+
+lien du dashboard : https://dashboard-pret-a-depenser-stre.herokuapp.com/, lien du dépot associé : https://github.com/jocelyne-vet/projet7deploy
